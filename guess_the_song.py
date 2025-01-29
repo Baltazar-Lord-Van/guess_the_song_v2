@@ -40,3 +40,39 @@ def download_and_convert_audio(song_url):
     except Exception as e:
         print(f"⚠️ Error downloading audio: {e}")
         return None
+
+def play_audio_from_youtube(song_url, play_time=15):
+    mp3_file = download_and_convert_audio(song_url)
+    
+    if mp3_file:
+        pygame.mixer.init()
+        try:
+            pygame.mixer.music.load(mp3_file)
+            pygame.mixer.music.play()
+            print(f"Now playing... You have {play_time} seconds to guess!")
+
+            start_time = time.time()
+            while time.time() - start_time < play_time:
+                if not pygame.mixer.music.get_busy():
+                    break
+                time.sleep(0.1)
+
+            pygame.mixer.music.stop()
+            print("Song ended! Time to guess!")
+
+        except Exception as e:
+            print(f"Error during audio playback: {e}")
+        
+        pygame.mixer.quit()
+        time.sleep(1)
+
+        try:
+            os.remove(mp3_file)
+        except PermissionError:
+            time.sleep(2)
+            try:
+                os.remove(mp3_file)
+            except Exception as e:
+                print(f"Error deleting file: {e}")
+    else:
+        print("Oops! Couldn't load the song.")
